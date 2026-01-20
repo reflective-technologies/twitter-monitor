@@ -1,0 +1,21 @@
+# Data files (may contain sensitive info)
+data/
+*.json
+!package.json
+
+# Auth tokens
+.env
+*.env
+
+# Temp files
+/tmp/
+*.tmp
+
+# OS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
