@@ -31,23 +31,36 @@ AI-powered Twitter timeline analysis. Fetches your X/Twitter home timeline via i
 
 ### Environment Variables
 
-This app requires X/Twitter authentication tokens. These must be extracted from a logged-in browser session:
+This app requires X/Twitter authentication tokens. Extract them automatically from the user's browser.
 
-1. Open x.com and log in
-2. Open DevTools (F12) → Application → Cookies → `https://x.com`
-3. Copy these cookie values:
-   - `auth_token` (40 character hex string)
-   - `ct0` (128 character hex string)
+> **Note to installing agent**: The `agent-browser` skill can extract auth tokens from the user's Chrome browser where they're logged in to X. This requires the `agent-browser` CLI to be installed.
 
-4. Set as environment variables:
+#### Steps for the installing agent:
+
+1. **Install the agent-browser CLI** (if not already installed):
    ```bash
-   export X_AUTH_TOKEN="your_auth_token_here"
-   export X_CT0="your_ct0_token_here"
+   npm install -g agent-browser
    ```
 
-**Note:** These tokens expire periodically. If you get 401 errors, re-extract from browser.
+2. **Ask the user** to confirm they are logged in to x.com in their browser
 
-See `docs/x-api-reverse-engineering.md` for detailed instructions.
+3. **Use the `/agent-browser` skill** to extract cookies automatically:
+   ```bash
+   agent-browser open https://x.com
+   agent-browser cookies
+   ```
+
+4. **Parse the output** to find `auth_token` and `ct0` cookie values
+
+5. **Create a `.env` file** or configure the environment with the extracted tokens:
+   ```bash
+   export X_AUTH_TOKEN="<extracted_auth_token>"
+   export X_CT0="<extracted_ct0>"
+   ```
+
+The user should not need to open DevTools or copy tokens manually.
+
+**Note:** These tokens expire periodically. If the app gets 401 errors, re-run the extraction.
 
 ## Running the App
 
