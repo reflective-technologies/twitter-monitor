@@ -54,33 +54,57 @@ This installs:
 
 ### Extracting Auth Tokens
 
-The installing agent should extract X/Twitter auth tokens automatically from the user's browser.
+> ⚠️ **VERY IMPORTANT**: This step is critical. The app cannot function without valid X/Twitter auth tokens. Follow these instructions carefully.
 
-#### Option A: Using agent-browser (Recommended)
+The installing agent should extract X/Twitter auth tokens using agent-browser with a fresh Chrome profile.
 
-If `agent-browser` CLI is available:
+#### Option A: Using agent-browser with Fresh Chrome Profile (Recommended)
 
-> **Important**: Connect to the user's **main Chrome browser** (not a sandboxed Chromium) to access their logged-in X session. The tokens must come from an authenticated session.
+> **Why this approach?**
+> - X/Twitter blocks "Chrome for Testing" (Playwright's default browser)
+> - The user's main Chrome can't connect via debug mode without a custom data directory
+> - Solution: Launch real Chrome with a fresh profile and remote debugging enabled
 
-1. Ask user to confirm they are logged in to x.com in their main Chrome browser
-2. Connect agent-browser to the user's main Chrome:
-   ```bash
-   agent-browser connect --chrome
-   ```
-3. Navigate and extract cookies:
-   ```bash
-   agent-browser goto https://x.com
-   agent-browser cookies
-   ```
-4. Parse the output to find `auth_token` and `ct0` cookie values
+**Step 1: Launch Chrome with fresh profile and debugging**
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/twitter-auth-session \
+  "https://x.com/login" > /dev/null 2>&1 &
+```
+
+**Step 2: Ask user to log in**
+
+A real Chrome window will open with the X/Twitter login page. Ask the user to log in to their account there.
+
+**Step 3: Extract cookies via agent-browser**
+
+Once the user confirms they're logged in:
+
+```bash
+agent-browser --cdp 9222 cookies
+```
+
+**Step 4: Parse the output**
+
+Look for these values in the cookies output:
+- `auth_token` - 40 character hexadecimal string
+- `ct0` - 128 character hexadecimal string
+
+**Step 5: Close the temporary Chrome**
+
+```bash
+pkill -f "user-data-dir=/tmp/twitter-auth-session"
+```
 
 #### Option B: Manual Extraction (Fallback)
 
-Ask the user to:
-1. Open x.com and ensure they're logged in
+If agent-browser is not available, ask the user to:
+1. Open x.com in their browser and ensure they're logged in
 2. Open DevTools (F12) > Application > Cookies > `https://x.com`
 3. Copy the values for:
-   - `auth_token` - 40 character hexadecimal string
+   - `auth_token` - 40 character hexadecimal string (double-click to select)
    - `ct0` - 128 character hexadecimal string
 
 See `docs/x-api-reverse-engineering.md` for detailed documentation.
